@@ -1,0 +1,106 @@
+PARSER_BEGIN(Parser)
+
+public class Parser{
+    public static void main(String[] args) throws Exception {
+       try {
+            Parser check=new Parser(System.in);
+            check.words();
+            System.out.println("Syntax is okay");
+        } catch (Throwable e) {
+            // Catching Throwable is ugly but JavaCC throws Error objects!
+            System.out.println("Syntax check failed: " + e.getMessage());
+        }
+    }
+}
+
+PARSER_END(Parser)
+
+//SKIP:  { " "  | "\r"  |"\r\n"                  }
+TOKEN: {
+  < create:"ADD" >
+| <  image: "IMAGE" >
+| < with:"WITH" >
+| < source :"SOURCE" >
+| < header: "Heading" >
+| < para:"PARAGRAPH" >
+| < url: "LINK" >
+| < text: "TEXT" >
+| < color: "COLOR" >
+| < font:"FONT" >
+| < quote:"">
+| < and:"AND" >
+| < nextLine: "\n" >
+| < alphanumeric: (["0"-"9"]) | (["a"-"z"]) | (["A"-"Z"]) | "/"|":" |".">
+
+
+   }
+
+Boolean words(): {}
+{
+  try {
+    commands()
+
+    <EOF>
+    { System.out.println("Parsed successfully!"); return true; }
+  }
+  catch (Exception e){
+    
+   { System.out.println("Parsed unsuccessfully!"); return false; }
+  }
+
+ 
+}
+void commands(): {}
+{
+(
+  <create> element()
+)
+ ( <nextLine>  )*
+}
+
+
+void element(): { }
+{
+ ( < image > <with > <source > < quote > sentence() < quote >)
+| < header > decorated_text()
+| < para > decorated_text()
+| < url > decorated_url()
+} 
+
+void text(): { }
+{
+ < with > <text > <quote> sentence() < quote >
+|  <text > <quote> sentence() < quote >
+}
+
+void color(): { }
+{
+   < with > <color > <quote> sentence() < quote >
+|  <color > <quote> sentence() < quote >
+}
+
+void font(): { }
+{
+   < with > <font > <quote> sentence() < quote >
+|  <font > <quote> sentence() < quote >
+}
+void sentence(): { }
+{
+  (  < alphanumeric >  )*
+}
+
+void decorated_text(): { }
+{
+  (<and > )*
+| < text >
+| < color >
+| < font >
+
+}
+
+void decorated_url(): { }
+{
+  < quote > <alphanumeric > <quote >
+} 
+
+
